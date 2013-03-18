@@ -258,6 +258,10 @@ config TEGRA_SYSTEM_DMA
 	  Adds system DMA functionality for NVIDIA Tegra SoCs, used by
 	  several Tegra device drivers
 
+config TEGRA_OVERCLOCK
+	bool "Enable Overclocking"
+	default n
+
 config TEGRA_PWM
 	tristate "Enable PWM driver"
 	select HAVE_PWM
@@ -376,7 +380,7 @@ config TEGRA_CLUSTER_CONTROL
 
 config TEGRA_AUTO_HOTPLUG
 	bool "Enable automatic CPU hot-plugging"
-	depends on HOTPLUG_CPU && CPU_FREQ && !ARCH_CPU_PROBE_RELEASE
+	depends on HOTPLUG_CPU && CPU_FREQ && !ARCH_CPU_PROBE_RELEASE && !ARCH_TEGRA_2x_SOC
 	default y
 	help
 	  This option enables turning CPUs off/on and switching tegra
@@ -514,6 +518,31 @@ config TEGRA_WDT_RECOVERY
 	  suspend/resume hangs.
 
 endif
+
+config TEGRA_CPU_FREQ_SET_MIN_MAX
+        bool "Set Min/Max CPU frequencies."
+depends on CPU_FREQ
+        default n
+        help
+          Allow setting min and max CPU frequencies. Sysfs can be used
+          to override these values.
+
+config TEGRA_CPU_FREQ_MAX
+        int "Max CPU Frequency"
+        depends on TEGRA_CPU_FREQ_SET_MIN_MAX
+        default 1000000
+
+config TEGRA_CPU_FREQ_MIN
+        int "Min CPU Frequency"
+        depends on TEGRA_CPU_FREQ_SET_MIN_MAX
+        default 216000
+
+config TEGRA2_LINK_CPU_GOVERNORS
+       bool "Tegra2 - Link CPU Governors"
+       default y
+	   depends on ARCH_TEGRA_2x_SOC
+	   help
+	     Force the scaling governor on both cores to stay in sync
 
 config TEGRA_SLOW_CSITE
 	bool "lower csite clock to 1 Mhz to reduce its power consumption"
