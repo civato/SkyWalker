@@ -59,6 +59,12 @@ extern int muic_send_cable_type(TYPE_MUIC_MODE mode);
 extern int half_boot_enable;
 #endif
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+extern bool force_fast_charge; /* fast charge */
+#else
+bool force_fast_charge = false;
+#endif
+
 void muic_init_max14526(TYPE_RESET reset)
 {
 	printk(KERN_WARNING "[MUIC] max14526_init()\n");
@@ -200,6 +206,21 @@ void set_max14526_muic_mode(unsigned char int_stat_value)
 	
 	printk(KERN_WARNING "[MUIC] set_max14526_muic_mode, int_stat_value = 0x%02x \n", int_stat_value);
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	if (force_fast_charge) {
+		if (int_stat_value & V_VBUS) {
+			printk("%s: forcing fast charge mode\n", __FUNCTION__);
+			muic_i2c_write_byte(SW_CONTROL, COMP2_TO_HZ | COMN1_TO_HZ);
+			muic_i2c_write_byte(CONTROL_1,ID_200 | ADC_EN  | CP_EN );
+			charging_mode = CHARGING_LG_TA;
+			muic_mode = MUIC_LG_TA;
+		} else {
+			charging_mode = CHARGING_NONE;
+			muic_mode = MUIC_UNKNOWN;
+		}
+		return;
+	}
+#endif
 	//                                                 
 	if (int_stat_value & V_VBUS) {
 #if 0
